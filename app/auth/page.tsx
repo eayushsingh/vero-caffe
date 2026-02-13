@@ -8,7 +8,7 @@ export default function LoginPage() {
             <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 text-center border border-neutral-100">
                 <div className="flex justify-center mb-8">
                     <Link href="/">
-                        <Logo size="footer" />
+                        <Logo size="lg" />
                     </Link>
                 </div>
 
