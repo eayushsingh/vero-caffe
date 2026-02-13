@@ -13,7 +13,7 @@ import Script from "next/script";
 
 declare global {
     interface Window {
-        Razorpay: any;
+        Razorpay: new (options: Record<string, unknown>) => { open: () => void };
     }
 }
 
