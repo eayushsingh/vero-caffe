@@ -1,0 +1,13 @@
+
+> vero-caffe@0.1.0 dev
+> cross-env NEXT_DISABLE_TURBOPACK=1 next dev
+
+⚠ Port 3000 is in use by process 59134, using available port 3001 instead.
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://10.232.2.34:3001
+
+✓ Starting...
+✓ Ready in 308ms
+ GET / 200 in 1378ms (compile: 1289ms, render: 89ms)
+ GET /logo.svg 404 in 210ms (compile: 159ms, render: 51ms)

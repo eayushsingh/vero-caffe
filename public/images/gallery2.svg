@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="100%" height="100%" fill="#F5EFE6" />
+  <rect x="80" y="80" width="1040" height="740" rx="20" fill="#EFE6DC" />
+  <text x="50%" y="50%" font-family="Helvetica, Arial, sans-serif" font-size="36" fill="#8A7F74" text-anchor="middle" dominant-baseline="middle">VERO — Gallery Image</text>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="8192" height="4608" viewBox="0 0 8192 4608">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#1b1816" stop-opacity="1" />
+      <stop offset="60%" stop-color="#0d0d0d" stop-opacity="1" />
+      <stop offset="100%" stop-color="#050505" stop-opacity="1" />
+    </radialGradient>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" type="fractalNoise" result="noise" />
+      <feColorMatrix type="saturate" values="0" />
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.06"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" mode="overlay" />
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#g)" />
+
+  <!-- low-key espresso drop -->
+  <g transform="translate(4096,2200)">
+    <ellipse cx="0" cy="0" rx="900" ry="1300" fill="#0b0b0b" opacity="0.6" />
+    <path d="M -120 120 C -80 -240 80 -240 120 120 C 50 60 -50 60 -120 120 Z" fill="#1a1716" opacity="0.85" transform="scale(6)" />
+    <circle cx="-40" cy="-200" r="60" fill="#2a2624" opacity="0.9" />
+    <ellipse cx="80" cy="-60" rx="220" ry="340" fill="#111010" opacity="0.75" />
+    <!-- tiny specular highlight -->
+    <ellipse cx="-120" cy="-260" rx="40" ry="24" fill="#e6d9c1" opacity="0.06" />
+  </g>
+
+  <!-- subtle film grain overlay -->
+  <rect width="100%" height="100%" filter="url(#grain)" opacity="0.06" />
+</svg>
