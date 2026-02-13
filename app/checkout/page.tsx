@@ -11,11 +11,6 @@ import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import Script from "next/script";
 
-declare global {
-    interface Window {
-        Razorpay: new (options: Record<string, unknown>) => { open: () => void };
-    }
-}
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -90,7 +85,7 @@ export default function CheckoutPage() {
                 },
             };
 
-            const rzp1 = new window.Razorpay(options);
+            const rzp1 = new (window as any).Razorpay(options);
             rzp1.open();
 
         } catch (error) {
