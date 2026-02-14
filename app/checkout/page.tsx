@@ -19,10 +19,8 @@ export default function CheckoutPage() {
     const [hydrated, setHydrated] = useState(false);
 
     useEffect(() => {
-        if (items.length === 0) {
-            console.log("Cart is empty after login");
-        }
-    }, [items]);
+        setHydrated(true);
+    }, []);
 
     // Form State
     const [name, setName] = useState("");
@@ -102,7 +100,6 @@ export default function CheckoutPage() {
 
     // Prevent hydration mismatch & Check Auth
     useEffect(() => {
-        setHydrated(true);
         const checkAuth = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) router.push("/auth");
