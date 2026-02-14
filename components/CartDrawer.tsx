@@ -300,33 +300,3 @@ export default function CartDrawer() {
         </AnimatePresence>
     );
 }
-const handleCheckout = async () => {
-    const res = await fetch("/api/create-razorpay-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: subtotal }),
-    });
-
-    const data = await res.json();
-
-    const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: subtotal * 100,
-        currency: "INR",
-        name: "VERO CAFFÉ",
-        description: "Order Payment",
-        order_id: data.orderId,
-
-        handler: function (response: any) {
-            alert("Payment Successful ✅");
-            console.log(response);
-        },
-
-        theme: {
-            color: "#6A4B3A",
-        },
-    };
-
-    const rzp = new (window as any).Razorpay(options);
-    rzp.open();
-};
