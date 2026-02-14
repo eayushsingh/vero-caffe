@@ -76,8 +76,6 @@ export const useCartStore = create<CartState>()(
         }),
         {
             name: "vero-caffe-cart",
-            storage: createJSONStorage(() => localStorage),
-            partialize: (state) => ({ items: state.items }),
         }
     )
 );
