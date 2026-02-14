@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, Variants } from "framer-motion";
@@ -30,6 +30,12 @@ export default function CartDrawer() {
     const clearCart = useCartStore((s) => s.clearCart);
     const totalQty = useCartStore(selectTotalQty);
     const subtotal = useCartStore(selectSubtotal);
+
+    const [hydrated, setHydrated] = useState(false);
+
+    useEffect(() => {
+        setHydrated(true);
+    }, []);
 
     /* ── Handlers ── */
     const handleCheckout = async () => {
@@ -102,6 +108,8 @@ export default function CartDrawer() {
             transition: { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] },
         },
     };
+
+    if (!hydrated) return null;
 
     return (
         <AnimatePresence>
