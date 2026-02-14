@@ -23,53 +23,64 @@ interface CartState {
 
 /* ─── Store ─── */
 
-export const useCartStore = create<CartState>((set) => ({
-    items: [],
-    cartOpen: false,
+import { persist, createJSONStorage } from "zustand/middleware";
 
-    setCartOpen: (open) => set({ cartOpen: open }),
+export const useCartStore = create<CartState>()(
+    persist(
+        (set, get) => ({
+            items: [],
+            cartOpen: false,
 
-    addItem: (item) =>
-        set((state) => {
-            const existing = state.items.find((i) => i.id === item.id);
-            if (existing) {
-                return {
+            setCartOpen: (open) => set({ cartOpen: open }),
+
+            addItem: (item) =>
+                set((state) => {
+                    const existing = state.items.find((i) => i.id === item.id);
+                    if (existing) {
+                        return {
+                            items: state.items.map((i) =>
+                                i.id === item.id ? { ...i, qty: i.qty + 1 } : i
+                            ),
+                        };
+                    }
+                    return { items: [...state.items, { ...item, qty: 1 }] };
+                }),
+
+            removeItem: (id) =>
+                set((state) => ({
+                    items: state.items.filter((i) => i.id !== id),
+                })),
+
+            increaseQty: (id) =>
+                set((state) => ({
                     items: state.items.map((i) =>
-                        i.id === item.id ? { ...i, qty: i.qty + 1 } : i
+                        i.id === id ? { ...i, qty: i.qty + 1 } : i
                     ),
-                };
-            }
-            return { items: [...state.items, { ...item, qty: 1 }] };
+                })),
+
+            decreaseQty: (id) =>
+                set((state) => {
+                    const item = state.items.find((i) => i.id === id);
+                    if (!item) return state;
+                    if (item.qty <= 1) {
+                        return { items: state.items.filter((i) => i.id !== id) };
+                    }
+                    return {
+                        items: state.items.map((i) =>
+                            i.id === id ? { ...i, qty: i.qty - 1 } : i
+                        ),
+                    };
+                }),
+
+            clearCart: () => set({ items: [], cartOpen: false }),
         }),
-
-    removeItem: (id) =>
-        set((state) => ({
-            items: state.items.filter((i) => i.id !== id),
-        })),
-
-    increaseQty: (id) =>
-        set((state) => ({
-            items: state.items.map((i) =>
-                i.id === id ? { ...i, qty: i.qty + 1 } : i
-            ),
-        })),
-
-    decreaseQty: (id) =>
-        set((state) => {
-            const item = state.items.find((i) => i.id === id);
-            if (!item) return state;
-            if (item.qty <= 1) {
-                return { items: state.items.filter((i) => i.id !== id) };
-            }
-            return {
-                items: state.items.map((i) =>
-                    i.id === id ? { ...i, qty: i.qty - 1 } : i
-                ),
-            };
-        }),
-
-    clearCart: () => set({ items: [], cartOpen: false }),
-}));
+        {
+            name: "vero-caffe-cart",
+            storage: createJSONStorage(() => localStorage),
+            partialize: (state) => ({ items: state.items }),
+        }
+    )
+);
 
 /* ─── Selectors ─── */
 
