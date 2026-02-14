@@ -16,7 +16,7 @@ export default function CheckoutPage() {
     const router = useRouter();
     const items = useCartStore((s) => s.items);
     const subtotal = useCartStore(selectSubtotal);
-    const [mounted, setMounted] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
 
     useEffect(() => {
         if (items.length === 0) {
@@ -102,7 +102,7 @@ export default function CheckoutPage() {
 
     // Prevent hydration mismatch & Check Auth
     useEffect(() => {
-        setMounted(true);
+        setHydrated(true);
         const checkAuth = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) router.push("/auth");
@@ -110,7 +110,7 @@ export default function CheckoutPage() {
         checkAuth();
     }, []);
 
-    if (!mounted) return null;
+    if (!hydrated) return null;
 
     if (items.length === 0) {
         return (
