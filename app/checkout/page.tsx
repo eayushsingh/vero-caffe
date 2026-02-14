@@ -9,7 +9,7 @@ import { useCartStore, selectSubtotal } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
-import Script from "next/script";
+
 
 
 export default function CheckoutPage() {
@@ -127,7 +127,7 @@ export default function CheckoutPage() {
 
     return (
         <>
-            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
             <div className="min-h-screen bg-[#FAFAF8] py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
