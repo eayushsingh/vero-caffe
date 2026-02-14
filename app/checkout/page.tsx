@@ -18,6 +18,12 @@ export default function CheckoutPage() {
     const subtotal = useCartStore(selectSubtotal);
     const [mounted, setMounted] = useState(false);
 
+    useEffect(() => {
+        if (items.length === 0) {
+            console.log("Cart is empty after login");
+        }
+    }, [items]);
+
     // Form State
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");

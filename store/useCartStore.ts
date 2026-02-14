@@ -75,7 +75,7 @@ export const useCartStore = create<CartState>()(
             clearCart: () => set({ items: [], cartOpen: false }),
         }),
         {
-            name: "vero-caffe-cart",
+            name: "vero-cart-storage",
             storage: createJSONStorage(() => localStorage),
             partialize: (state) => ({ items: state.items }),
         }
