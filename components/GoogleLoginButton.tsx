@@ -3,11 +3,25 @@
 import { supabase } from "@/lib/supabase";
 
 export default function GoogleLoginButton() {
+  const getRedirectUrl = () => {
+    // Check if we are in browser
+    if (typeof window !== "undefined") {
+      // Local development
+      if (window.location.hostname === "localhost") {
+        return `${window.location.origin}/checkout`;
+      }
+      // Production - always redirect to main domain
+      return "https://vero-caffe.vercel.app/checkout";
+    }
+    // Server-side fallback (unused in client component but safe)
+    return "https://vero-caffe.vercel.app/checkout";
+  };
+
   const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/checkout`,
+        redirectTo: getRedirectUrl(),
       },
     });
   };
