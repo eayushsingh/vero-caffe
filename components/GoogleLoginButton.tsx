@@ -5,17 +5,13 @@ import Image from "next/image";
 
 export default function GoogleLoginButton() {
   const signInWithGoogle = async () => {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const redirectTo = `${siteUrl}/auth/callback`;
 
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo,
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
       },
     });
   };

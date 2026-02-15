@@ -1,12 +1,11 @@
 "use client";
 
-import { createClient } from "@/lib/supabase-client";
+import { supabaseClient as supabase } from "@/lib/supabase-client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 
 export default function ProfileInfo() {
     const [user, setUser] = useState<User | null>(null);
-    const supabase = createClient();
 
     useEffect(() => {
         supabase.auth.getUser().then(({ data }) => {

@@ -1,10 +1,9 @@
 "use client";
 
-import { createClient } from "@/lib/supabase-client";
+import { supabaseClient as supabase } from "@/lib/supabase-client";
 import Image from "next/image";
 
 export default function LoginPage() {
-    const supabase = createClient();
 
     const signIn = async () => {
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
