@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useCartStore, selectTotalQty, selectSubtotal } from "@/store/useCartStore"
 import { ShoppingBag, ChevronRight } from "lucide-react"
 
@@ -8,14 +8,12 @@ export default function FloatingCheckoutBar() {
     const totalQuantity = useCartStore(selectTotalQty)
     const subtotal = useCartStore(selectSubtotal)
     const setCartOpen = useCartStore((s) => s.setCartOpen)
-    const hydrated = useCartStore((s) => s.hydrated)
-
+    const [hydrated, setHydrated] = useState(false);
     useEffect(() => {
-        useCartStore.persist.rehydrate()
-    }, [])
+        setHydrated(true);
+    }, []);
 
-    // Prevent hydration mismatch
-    if (!hydrated) return null
+    if (!hydrated) return null;
 
     // Hide when cart is empty
     if (totalQuantity === 0) return null

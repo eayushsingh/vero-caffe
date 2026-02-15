@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
         const orderData = {
             status: "PENDING",
-            payment_method: payment_method.toUpperCase(),
+            payment_method: "COUNTER", // Force COUNTER for now
             user_email: emailToUse.toLowerCase(),
             user_name: user_name,
             phone: phone,
@@ -79,35 +79,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: orderError.message }, { status: 500 });
         }
 
-        // IF ONLINE: Create Razorpay Order
-        if (payment_method.toUpperCase() === "ONLINE") {
-            try {
-                const rzpOrder = await razorpay.orders.create({
-                    amount: Math.round(serverCalculatedTotal * 100), // convert to paise
-                    currency: "INR",
-                    receipt: order.id,
-                });
-
-                return NextResponse.json({
-                    success: true,
-                    order_id: order.id,
-                    razorpay_order_id: rzpOrder.id,
-                    amount: rzpOrder.amount,
-                    message: "Order created, proceed to payment"
-                }, { status: 201 });
-            } catch (rzpError: any) {
-                console.error("Razorpay Order Error:", rzpError);
-                // We keep the pending DB order, user can try payment again
-                return NextResponse.json({
-                    success: true,
-                    order_id: order.id,
-                    error: "Razorpay initialization failed, but order was saved.",
-                    needs_payment_retry: true
-                }, { status: 201 });
-            }
-        }
-
-        // IF COUNTER: Return success
+        // Return success for COUNTER payment
         return NextResponse.json({
             success: true,
             order_id: order.id,

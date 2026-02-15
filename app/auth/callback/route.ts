@@ -12,7 +12,8 @@ export async function GET(request: Request) {
         }
 
         // URL to redirect to after sign in process completes
-        return NextResponse.redirect(new URL("/admin", requestUrl.origin));
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        return NextResponse.redirect(new URL("/admin", siteUrl));
     } catch (error) {
         console.error("Callback error:", error);
         return NextResponse.redirect(new URL("/auth/login?error=auth_callback_error", request.url));

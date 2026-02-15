@@ -6,18 +6,15 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, ShoppingBag, CreditCard, Banknote, Loader2 } from "lucide-react"
 import { useCartStore, selectSubtotal } from "@/store/useCartStore"
+import { useAuth } from "@/components/hooks/useAuth"
 import Navbar from "@/components/navbar"
 
 export default function CheckoutPage() {
     const router = useRouter()
+    const { user } = useAuth()
     const items = useCartStore((s) => s.items)
     const subtotal = useCartStore(selectSubtotal)
     const clearCart = useCartStore((s) => s.clearCart)
-    const hydrated = useCartStore((s) => s.hydrated)
-
-    useEffect(() => {
-        useCartStore.persist.rehydrate()
-    }, [])
 
     const [loading, setLoading] = useState(false)
     const [paymentMethod, setPaymentMethod] = useState<"online" | "counter" | null>(null)
@@ -28,10 +25,9 @@ export default function CheckoutPage() {
     const [phone, setPhone] = useState("")
     const [note, setNote] = useState("")
 
-    // Hydration check
-    const [mounted, setMounted] = useState(false)
+    const [hydrated, setHydrated] = useState(false)
     useEffect(() => {
-        setMounted(true)
+        setHydrated(true)
     }, [])
 
     const handlePlaceOrder = async (method: "online" | "counter") => {
@@ -44,18 +40,20 @@ export default function CheckoutPage() {
             return
         }
 
+        // Phase 2: Redirect "online" clicks to a modal, or just process as counter?
+        // User said "Enable Pay at Counter ONLY". I'll make online button show the modal, 
+        // and the modal will proceed to counter.
         if (method === "online") {
             setShowOnlineModal(true)
             return
         }
 
-        const effectiveMethod = method; // Narrowed to "counter" strictly by logical flow
+        const effectiveMethod = "counter"
 
         setPaymentMethod(effectiveMethod)
         setLoading(true)
 
         try {
-            // 1. Create Order in DB (and Razorpay logic is bypassed above)
             const orderRes = await fetch("/api/orders/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -68,6 +66,7 @@ export default function CheckoutPage() {
                         image: item.image,
                     })),
                     payment_method: effectiveMethod.toUpperCase(),
+                    user_email: user?.email || null,
                     user_name: name,
                     phone: phone,
                     notes: note || null,
@@ -77,7 +76,6 @@ export default function CheckoutPage() {
             const orderData = await orderRes.json();
             if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
 
-            // For counter payment
             clearCart()
             router.push(`/success?method=${effectiveMethod}&order_id=${orderData.order_id}`)
 
@@ -89,13 +87,7 @@ export default function CheckoutPage() {
         }
     }
 
-    if (!hydrated) {
-        return (
-            <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6A4B3A]" />
-            </div>
-        )
-    }
+    if (!hydrated) return null
 
     if (items.length === 0) {
         return (

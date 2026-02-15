@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
 import { ShoppingBag, X, Minus, Plus } from "lucide-react";
@@ -15,10 +15,9 @@ export default function CartDrawer() {
     const updateQuantity = useCartStore((s) => s.updateQuantity);
     const cartOpen = useCartStore((s) => s.cartOpen);
     const setCartOpen = useCartStore((s) => s.setCartOpen);
-    const hydrated = useCartStore((s) => s.hydrated);
-
+    const [hydrated, setHydrated] = useState(false);
     useEffect(() => {
-        useCartStore.persist.rehydrate();
+        setHydrated(true);
     }, []);
 
     const handleCheckout = () => {
@@ -27,7 +26,6 @@ export default function CartDrawer() {
         router.push("/checkout");
     };
 
-    // Prevent hydration mismatch
     if (!hydrated) return null;
     if (!cartOpen) return null;
 

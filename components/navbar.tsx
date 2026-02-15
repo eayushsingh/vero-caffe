@@ -27,13 +27,13 @@ export default function Navbar() {
   const clearCart = useCartStore((s) => s.clearCart);
   const totalQty = useCartStore(selectTotalQty);
   const subtotal = useCartStore(selectSubtotal);
-  const hydrated = useCartStore((state) => state.hydrated);
-
+  /* ── Hydration Guard ── */
+  const [isHydrated, setIsHydrated] = useState(false);
   useEffect(() => {
-    useCartStore.persist.rehydrate();
+    setIsHydrated(true);
   }, []);
 
-  if (!hydrated) return null;
+  if (!isHydrated) return null;
 
   /* ── Framer variants ── */
   const navVariant: Variants = {
