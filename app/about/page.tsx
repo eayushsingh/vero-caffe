@@ -14,7 +14,7 @@ export default function AboutPage() {
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="relative h-96 w-full rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md shadow-sm">
-            <Image src="/images/gallery2.svg" alt="Barista" fill className="object-cover" sizes="(max-width:768px) 100vw, 50vw" />
+            <Image src="/gallery2.svg" alt="Barista" fill className="object-cover" sizes="(max-width:768px) 100vw, 50vw" />
           </div>
 
           <div className="text-[#1A1A1A] leading-relaxed space-y-6">

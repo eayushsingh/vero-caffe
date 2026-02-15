@@ -30,9 +30,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-        <Script
+        <script
           src="https://checkout.razorpay.com/v1/checkout.js"
-          strategy="lazyOnload"
+          async
         />
 
       </body>

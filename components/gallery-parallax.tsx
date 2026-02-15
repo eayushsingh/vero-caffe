@@ -5,12 +5,12 @@ import { motion, useScroll, useTransform, Variants } from "framer-motion";
 
 // Use local, deterministic placeholders to avoid upstream image failures during development
 const IMAGES = [
-  "/images/gallery1.svg",
-  "/images/gallery2.svg",
-  "/images/gallery3.svg",
-  "/images/gallery1.svg",
-  "/images/gallery2.svg",
-  "/images/gallery3.svg",
+  "/gallery1.svg",
+  "/gallery2.svg",
+  "/gallery3.svg",
+  "/gallery1.svg",
+  "/gallery2.svg",
+  "/gallery3.svg",
 ];
 
 const floatVariants: Variants = {

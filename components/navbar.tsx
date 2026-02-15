@@ -1,16 +1,18 @@
 "use client";
 import Logo from "./Logo";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, Variants } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, X, Minus, Plus, Trash2 } from "lucide-react";
+import { ShoppingBag, X, Minus, Plus, Trash2, User } from "lucide-react";
 import {
   useCartStore,
   selectTotalQty,
   selectSubtotal,
 } from "@/store/useCartStore";
 import CartDrawer from "./CartDrawer";
+import ProfileMenu from "./ProfileMenu";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -20,11 +22,18 @@ export default function Navbar() {
   const cartOpen = useCartStore((s) => s.cartOpen);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
   const addItem = useCartStore((s) => s.addItem);
-  const decreaseQty = useCartStore((s) => s.decreaseQty);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const clearCart = useCartStore((s) => s.clearCart);
   const totalQty = useCartStore(selectTotalQty);
   const subtotal = useCartStore(selectSubtotal);
+  const hydrated = useCartStore((state) => state.hydrated);
+
+  useEffect(() => {
+    useCartStore.persist.rehydrate();
+  }, []);
+
+  if (!hydrated) return null;
 
   /* ── Framer variants ── */
   const navVariant: Variants = {
@@ -128,6 +137,11 @@ export default function Navbar() {
                   Visit Us
                 </Button>
               </Link>
+            </div>
+
+            {/* User Profile (Desktop) */}
+            <div className="hidden md:block">
+              <ProfileMenu />
             </div>
 
             {/* Cart icon — always visible */}

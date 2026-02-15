@@ -1,11 +1,13 @@
-import Image from "next/image"
 import Link from "next/link"
 import Navbar from "@/components/navbar"
 import MenuSection from "@/components/MenuSection"
+import FloatingCheckoutBar from "@/components/FloatingCheckoutBar"
 
-export default function MenuPage() {
+export const dynamic = "force-dynamic"
+
+export default async function MenuPage() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen pb-24">
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-6 py-24">
@@ -21,6 +23,9 @@ export default function MenuPage() {
       <div className="pb-20 text-center">
         <Link href="/" className="text-sm tracking-[0.25em] uppercase text-[#6B6B6B] hover:text-[#1A1A1A] transition">Back To Home</Link>
       </div>
+
+      {/* Floating checkout bar - appears when cart has items */}
+      <FloatingCheckoutBar />
     </main>
   )
 }

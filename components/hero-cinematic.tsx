@@ -19,12 +19,6 @@ const fadeUp: Variants = {
   },
 };
 
-const SIDE_IMAGES = [
-  { src: "/hero/side-1.jpg", alt: "Vero Café ambience" },
-  { src: "/hero/side-2.jpg", alt: "Vero Café food" },
-  { src: "/hero/side-3.jpg", alt: "Vero Café outdoor" },
-];
-
 export default function HeroCinematic() {
   return (
     <motion.section
@@ -36,7 +30,7 @@ export default function HeroCinematic() {
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <Image
-          src="/images/hero-8k.svg"
+          src="/hero-8k.svg"
           alt=""
           fill
           className="object-cover opacity-20"
@@ -51,25 +45,9 @@ export default function HeroCinematic() {
         />
       </div>
 
-      {/* Main layout: side images + center content */}
+      {/* Main layout: center content only */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 md:py-18 lg:py-24">
-        <div className="flex items-center justify-center gap-6 lg:gap-10">
-          {/* Left floating image — hidden below lg */}
-          <motion.div
-            variants={fadeUp}
-            className="hidden lg:block flex-shrink-0"
-          >
-            <div className="relative w-28 xl:w-36 aspect-[4/5] rounded-xl overflow-hidden shadow-lg">
-              <Image
-                src={SIDE_IMAGES[0].src}
-                alt={SIDE_IMAGES[0].alt}
-                fill
-                className="object-cover"
-                sizes="144px"
-              />
-            </div>
-          </motion.div>
-
+        <div className="flex items-center justify-center">
           {/* Center content */}
           <div
             className="w-full max-w-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] rounded-2xl flex flex-col items-center text-center px-5 sm:px-8 md:px-12 py-10 sm:py-12 md:py-14 lg:py-16"
@@ -135,53 +113,7 @@ export default function HeroCinematic() {
               </a>
             </motion.div>
           </div>
-
-          {/* Right floating images — hidden below lg */}
-          <motion.div
-            variants={fadeUp}
-            className="hidden lg:flex flex-col gap-4 flex-shrink-0"
-          >
-            <div className="relative w-24 xl:w-32 aspect-[4/5] rounded-xl overflow-hidden shadow-lg">
-              <Image
-                src={SIDE_IMAGES[1].src}
-                alt={SIDE_IMAGES[1].alt}
-                fill
-                className="object-cover"
-                sizes="128px"
-              />
-            </div>
-            <div className="relative w-28 xl:w-36 aspect-[4/5] rounded-xl overflow-hidden shadow-lg">
-              <Image
-                src={SIDE_IMAGES[2].src}
-                alt={SIDE_IMAGES[2].alt}
-                fill
-                className="object-cover"
-                sizes="144px"
-              />
-            </div>
-          </motion.div>
         </div>
-
-        {/* Mobile image strip — visible on sm/md only */}
-        <motion.div
-          variants={fadeUp}
-          className="flex lg:hidden justify-center gap-3 mt-8"
-        >
-          {SIDE_IMAGES.map((img) => (
-            <div
-              key={img.src}
-              className="relative w-20 sm:w-24 md:w-28 aspect-[4/5] rounded-xl overflow-hidden shadow-md"
-            >
-              <Image
-                src={img.src}
-                alt={img.alt}
-                fill
-                className="object-cover"
-                sizes="112px"
-              />
-            </div>
-          ))}
-        </motion.div>
       </div>
     </motion.section>
   );

@@ -3,17 +3,17 @@ import Navbar from "@/components/navbar";
 
 // Use local placeholders to keep the gallery deterministic during development
 const IMAGES = [
-  "/images/gallery1.svg",
-  "/images/gallery2.svg",
-  "/images/gallery3.svg",
-  "/images/gallery1.svg",
-  "/images/gallery2.svg",
-  "/images/gallery3.svg",
+  "/gallery1.svg",
+  "/gallery2.svg",
+  "/gallery3.svg",
+  "/gallery1.svg",
+  "/gallery2.svg",
+  "/gallery3.svg",
 ];
 
 export default function GalleryPage() {
   return (
-  <main className="min-h-screen">
+    <main className="min-h-screen">
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-6 py-24">

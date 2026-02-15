@@ -1,27 +1,21 @@
 "use client";
 
-import { supabase } from "@/lib/supabase";
+import { supabaseClient as supabase } from "@/lib/supabase-client";
+import Image from "next/image";
 
 export default function GoogleLoginButton() {
-  const getRedirectUrl = () => {
-    // Check if we are in browser
-    if (typeof window !== "undefined") {
-      // Local development
-      if (window.location.hostname === "localhost") {
-        return `${window.location.origin}/checkout`;
-      }
-      // Production - always redirect to main domain
-      return "https://vero-caffe.vercel.app/checkout";
-    }
-    // Server-side fallback (unused in client component but safe)
-    return "https://vero-caffe.vercel.app/checkout";
-  };
-
   const signInWithGoogle = async () => {
+    // Construct the URL dynamically based on the current window location
+    const redirectTo = `${window.location.origin}/auth/callback`;
+
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: getRedirectUrl(),
+        redirectTo,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
     });
   };
@@ -29,9 +23,19 @@ export default function GoogleLoginButton() {
   return (
     <button
       onClick={signInWithGoogle}
-      className="px-5 py-3 rounded-full bg-[#6A4B3A] text-white"
+      className="w-full flex items-center justify-center gap-3 px-6 py-3.5 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-all group bg-white hover:border-neutral-300 shadow-sm"
     >
-      Continue with Google
+      <div className="relative w-5 h-5">
+        <Image
+          src="https://www.google.com/favicon.ico"
+          alt="Google"
+          fill
+          className="object-contain"
+        />
+      </div>
+      <span className="font-medium text-neutral-600 group-hover:text-neutral-900">
+        Continue with Google
+      </span>
     </button>
   );
 }
