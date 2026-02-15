@@ -66,16 +66,19 @@ function PaymentContent() {
         setProcessing(true);
 
         try {
-            // 1. Create Razorpay Order
-            const res = await fetch("/api/create-razorpay-order", {
+            // 1. Create Razorpay Order securely on server
+            const res = await fetch("/api/payment/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount: order.subtotal }),
+                body: JSON.stringify({ orderId: order.id }),
             });
 
-            if (!res.ok) throw new Error("Failed to initialize payment");
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to initialize payment");
+            }
 
-            const { orderId: rzpOrderId } = await res.json();
+            const { razorpay_order_id: rzpOrderId, amount } = await res.json();
 
             // 2. Open Razorpay
             const options = {
@@ -86,27 +89,33 @@ function PaymentContent() {
                 description: `Order #${order.id.slice(0, 8)}`,
                 order_id: rzpOrderId,
                 handler: async function (response: any) {
-                    // Success! Call Secure API to update status
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) return;
+                    // Success! Call Secure API to verify signature and update status
+                    setProcessing(true);
+                    try {
+                        const verifyRes = await fetch("/api/payment/verify", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                orderId: order.id
+                            })
+                        });
 
-                    const updateRes = await fetch("/api/orders/update-payment", {
-                        method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${session.access_token}`
-                        },
-                        body: JSON.stringify({
-                            orderId: order.id,
-                            status: "COMPLETED",
-                            payment_method: "ONLINE"
-                        })
-                    });
+                        if (!verifyRes.ok) {
+                            const errorData = await verifyRes.json();
+                            throw new Error(errorData.error || "Verification failed");
+                        }
 
-                    if (!updateRes.ok) {
-                        alert("Payment successful but failed to update order status. Please contact support.");
-                    } else {
                         router.push(`/success?orderId=${order.id}`);
+                    } catch (err: any) {
+                        console.error("Verification error:", err);
+                        alert(`Payment was successful but verification failed: ${err.message}. Please contact support.`);
+                    } finally {
+                        setProcessing(false);
                     }
                 },
                 theme: { color: "#6A4B3A" },

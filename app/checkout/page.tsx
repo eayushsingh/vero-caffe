@@ -47,71 +47,11 @@ export default function CheckoutPage() {
         setLoading(true)
 
         try {
-            if (method === "online") {
-                const res = await fetch("/api/create-order", {
-                    method: "POST",
-                    body: JSON.stringify({ items }),
-                });
-
-                const data = await res.json();
-
-                if (!data.id) throw new Error(data.error || "Order failed");
-
-                const options = {
-                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-                    amount: data.amount,
-                    currency: "INR",
-                    order_id: data.id,
-                    name: "VERO CAFFÉ",
-                    description: "Order Payment",
-
-                    handler: async function (response: any) {
-                        // After payment, create order in DB
-                        const orderData = {
-                            items: items.map(item => ({
-                                id: item.id,
-                                name: item.name,
-                                price: item.price,
-                                quantity: item.quantity,
-                                image: item.image,
-                            })),
-                            total_amount: subtotal,
-                            payment_method: method,
-                            user_name: name,
-                            phone: phone,
-                            note: note || null,
-                            payment_id: response.razorpay_payment_id,
-                            razorpay_order_id: response.razorpay_order_id,
-                        }
-
-                        const createOrderRes = await fetch("/api/orders/create", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(orderData),
-                        })
-
-                        const createOrderData = await createOrderRes.json()
-
-                        if (!createOrderRes.ok) {
-                            throw new Error(createOrderData.error || "Failed to save order")
-                        }
-
-                        clearCart();
-                        router.push(`/success?method=${method}&order_id=${createOrderData.order_id}`)
-                    },
-                    modal: {
-                        ondismiss: function () {
-                            setLoading(false);
-                            setPaymentMethod(null);
-                        }
-                    }
-                };
-
-                const razor = new (window as any).Razorpay(options);
-                razor.open();
-            } else {
-                // Cash at counter logic
-                const orderData = {
+            // 1. Create Order in DB (and Razorpay if online)
+            const orderRes = await fetch("/api/orders/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
                     items: items.map(item => ({
                         id: item.id,
                         name: item.name,
@@ -119,38 +59,72 @@ export default function CheckoutPage() {
                         quantity: item.quantity,
                         image: item.image,
                     })),
-                    total_amount: subtotal,
-                    payment_method: method,
+                    payment_method: method.toUpperCase(),
                     user_name: name,
                     phone: phone,
-                    note: note || null,
-                }
+                    notes: note || null,
+                }),
+            });
 
-                const res = await fetch("/api/orders/create", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(orderData),
-                })
+            const orderData = await orderRes.json();
+            if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
 
-                const data = await res.json()
+            if (method === "online") {
+                // 2. Open Razorpay Modal
+                const options = {
+                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                    amount: orderData.amount,
+                    currency: "INR",
+                    order_id: orderData.razorpay_order_id,
+                    name: "VERO CAFFÉ",
+                    description: "Coffee Order",
+                    handler: async function (response: any) {
+                        try {
+                            setLoading(true);
+                            // 3. Verify Payment
+                            const verifyRes = await fetch("/api/payment/verify", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    orderId: orderData.order_id
+                                }),
+                            });
 
-                if (!res.ok) {
-                    throw new Error(data.error || "Failed to create order")
-                }
+                            if (!verifyRes.ok) throw new Error("Payment verification failed");
 
+                            clearCart();
+                            router.push(`/success?method=${method}&order_id=${orderData.order_id}`);
+                        } catch (err: any) {
+                            alert(err.message || "Payment verification failed. Please contact support.");
+                        } finally {
+                            setLoading(false);
+                        }
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            setLoading(false);
+                            setPaymentMethod(null);
+                        }
+                    },
+                    theme: { color: "#6A4B3A" }
+                };
+
+                const razor = new (window as any).Razorpay(options);
+                razor.open();
+            } else {
+                // 3. Counter Payment success
                 clearCart()
-                router.push(`/success?method=${method}&order_id=${data.order_id}`)
+                router.push(`/success?method=${method}&order_id=${orderData.order_id}`)
             }
 
         } catch (err: any) {
             console.error("Order error:", err)
             alert(err.message || "Failed to place order. Please try again.")
-        } finally {
-            // Loading is set to false in online ondismiss or hander, or here for counter
-            if (method === "counter") {
-                setLoading(false)
-                setPaymentMethod(null)
-            }
+            setLoading(false)
+            setPaymentMethod(null)
         }
     }
 

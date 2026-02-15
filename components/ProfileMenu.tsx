@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/hooks/useAuth";
 import Image from "next/image";
+import { useCartStore } from "@/store/useCartStore";
 
 const ADMIN_EMAIL = "ayushsinghe07@gmail.com";
 
@@ -16,6 +17,7 @@ export default function ProfileMenu() {
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
     const menuRef = useRef<HTMLDivElement>(null);
+    const clearCart = useCartStore((s) => s.clearCart);
     const supabase = createClient();
 
     // Close on click outside
@@ -31,6 +33,7 @@ export default function ProfileMenu() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
+        clearCart();
         router.push("/");
         router.refresh();
     };

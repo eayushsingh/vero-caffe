@@ -1,9 +1,17 @@
 import { supabaseServer } from "@/lib/supabase-server";
+import { isAdmin } from "@/lib/supabase/admin";
+import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
     try {
+        // SECURITY: Verify admin status
+        const admin = await isAdmin();
+        if (!admin) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         // Fetch all orders sorted by newest first
         const { data, error } = await supabaseServer
             .from("orders")
@@ -12,12 +20,12 @@ export async function GET(req: Request) {
 
         if (error) {
             console.error("Admin Orders Fetch Error:", error);
-            return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+            return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return new Response(JSON.stringify(data), { status: 200 });
+        return NextResponse.json(data, { status: 200 });
 
     } catch (err: any) {
-        return new Response(JSON.stringify({ error: err.message || "Server Error" }), { status: 500 });
+        return NextResponse.json({ error: err.message || "Server Error" }, { status: 500 });
     }
 }
