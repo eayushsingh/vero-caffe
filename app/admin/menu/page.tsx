@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase-server";
 import AdminMenuTable from "@/components/admin/AdminMenuTable";
 
 export const dynamic = 'force-dynamic';

@@ -21,6 +21,7 @@ export default function CheckoutPage() {
 
     const [loading, setLoading] = useState(false)
     const [paymentMethod, setPaymentMethod] = useState<"online" | "counter" | null>(null)
+    const [showOnlineModal, setShowOnlineModal] = useState(false)
 
     // Form State
     const [name, setName] = useState("")
@@ -43,11 +44,18 @@ export default function CheckoutPage() {
             return
         }
 
-        setPaymentMethod(method)
+        if (method === "online") {
+            setShowOnlineModal(true)
+            return
+        }
+
+        const effectiveMethod = method; // Narrowed to "counter" strictly by logical flow
+
+        setPaymentMethod(effectiveMethod)
         setLoading(true)
 
         try {
-            // 1. Create Order in DB (and Razorpay if online)
+            // 1. Create Order in DB (and Razorpay logic is bypassed above)
             const orderRes = await fetch("/api/orders/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -59,7 +67,7 @@ export default function CheckoutPage() {
                         quantity: item.quantity,
                         image: item.image,
                     })),
-                    payment_method: method.toUpperCase(),
+                    payment_method: effectiveMethod.toUpperCase(),
                     user_name: name,
                     phone: phone,
                     notes: note || null,
@@ -69,56 +77,9 @@ export default function CheckoutPage() {
             const orderData = await orderRes.json();
             if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
 
-            if (method === "online") {
-                // 2. Open Razorpay Modal
-                const options = {
-                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-                    amount: orderData.amount,
-                    currency: "INR",
-                    order_id: orderData.razorpay_order_id,
-                    name: "VERO CAFFÉ",
-                    description: "Coffee Order",
-                    handler: async function (response: any) {
-                        try {
-                            setLoading(true);
-                            // 3. Verify Payment
-                            const verifyRes = await fetch("/api/payment/verify", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                    razorpay_order_id: response.razorpay_order_id,
-                                    razorpay_payment_id: response.razorpay_payment_id,
-                                    razorpay_signature: response.razorpay_signature,
-                                    orderId: orderData.order_id
-                                }),
-                            });
-
-                            if (!verifyRes.ok) throw new Error("Payment verification failed");
-
-                            clearCart();
-                            router.push(`/success?method=${method}&order_id=${orderData.order_id}`);
-                        } catch (err: any) {
-                            alert(err.message || "Payment verification failed. Please contact support.");
-                        } finally {
-                            setLoading(false);
-                        }
-                    },
-                    modal: {
-                        ondismiss: function () {
-                            setLoading(false);
-                            setPaymentMethod(null);
-                        }
-                    },
-                    theme: { color: "#6A4B3A" }
-                };
-
-                const razor = new (window as any).Razorpay(options);
-                razor.open();
-            } else {
-                // 3. Counter Payment success
-                clearCart()
-                router.push(`/success?method=${method}&order_id=${orderData.order_id}`)
-            }
+            // For counter payment
+            clearCart()
+            router.push(`/success?method=${effectiveMethod}&order_id=${orderData.order_id}`)
 
         } catch (err: any) {
             console.error("Order error:", err)
@@ -317,6 +278,47 @@ export default function CheckoutPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Online Payment Coming Soon Modal */}
+            {showOnlineModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300">
+                    <div
+                        className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-neutral-100 animate-in fade-in zoom-in duration-300"
+                    >
+                        <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                            <CreditCard className="w-8 h-8 text-amber-600" />
+                        </div>
+
+                        <h2 className="font-serif text-2xl text-[#1A1A1A] text-center mb-3">
+                            Payment Coming Soon
+                        </h2>
+
+                        <p className="text-neutral-500 text-center mb-8 px-2">
+                            Online payment will be available soon. Please pay at the counter for now.
+                        </p>
+
+                        <div className="space-y-3">
+                            <Link href="/menu" className="block w-full">
+                                <button
+                                    className="w-full py-4 rounded-xl bg-[#6A4B3A] text-white hover:bg-[#5A3F31] font-medium tracking-wide transition-all shadow-lg hover:shadow-xl"
+                                >
+                                    Go Back to Menu
+                                </button>
+                            </Link>
+
+                            <button
+                                onClick={() => {
+                                    setShowOnlineModal(false)
+                                    handlePlaceOrder("counter")
+                                }}
+                                className="w-full py-4 rounded-xl border-2 border-[#6A4B3A] text-[#6A4B3A] bg-white hover:bg-[#6A4B3A]/5 font-medium tracking-wide transition-all"
+                            >
+                                Pay at Counter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -5,8 +5,8 @@ import Image from "next/image";
 
 export default function GoogleLoginButton() {
   const signInWithGoogle = async () => {
-    // Construct the URL dynamically based on the current window location
-    const redirectTo = `${window.location.origin}/auth/callback`;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    const redirectTo = `${siteUrl}/auth/callback`;
 
     await supabase.auth.signInWithOAuth({
       provider: "google",

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase-server"
 import { redirect } from "next/navigation"
 
 export default async function AdminLayout({
@@ -19,8 +19,10 @@ export default async function AdminLayout({
       redirect("/auth/login")
     }
 
-    // Optional: restrict to a specific admin email if desired
-    // if (user.email !== process.env.ADMIN_EMAIL) redirect('/')
+    const ADMIN_EMAILS = ["ayushsinghe07@gmail.com"]
+    if (!ADMIN_EMAILS.includes(user.email || "")) {
+      redirect("/")
+    }
   } catch (e) {
     // If auth check fails, redirect to login
     redirect("/auth/login")

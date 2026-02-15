@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, LogOut, Package, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase-client";
 import { useAuth } from "@/components/hooks/useAuth";
 import Image from "next/image";
 import { useCartStore } from "@/store/useCartStore";
 
-const ADMIN_EMAIL = "ayushsinghe07@gmail.com";
+const ADMIN_EMAILS = ["ayushsinghe07@gmail.com"];
 
 export default function ProfileMenu() {
     const { user } = useAuth();
@@ -51,7 +51,7 @@ export default function ProfileMenu() {
         );
     }
 
-    const isAdmin = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const isUserAdmin = user.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
     const userName = user.user_metadata?.full_name || "User";
     const userEmail = user.email;
     const userAvatar = user.user_metadata?.avatar_url;
@@ -96,7 +96,7 @@ export default function ProfileMenu() {
 
                         {/* Menu Items */}
                         <div className="py-2">
-                            {isAdmin && (
+                            {isUserAdmin && (
                                 <Link
                                     href="/admin"
                                     onClick={() => setIsOpen(false)}

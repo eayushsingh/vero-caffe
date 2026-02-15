@@ -1,5 +1,5 @@
 import { supabaseServer } from "@/lib/supabase-server";
-import { isAdmin } from "@/lib/supabase/admin";
+import { isAdmin } from "@/lib/admin";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
