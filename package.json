@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "dev:clean": "rm -rf .next && next dev --turbo",
-    "dev:restart": "pkill -f next || true && rm -rf .next && next dev --turbo",
+    "dev": "next dev --webpack",
+    "dev:clean": "rm -rf .next && next dev",
+    "dev:restart": "pkill -f next || true && rm -rf .next && next dev",
     "dev:webpack": "next dev --webpack",
-    "build": "next build",
+    "build": "NEXT_DISABLE_TURBOPACK=1 next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.0",

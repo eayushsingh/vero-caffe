@@ -1,0 +1,18 @@
+export default function Logo({
+  size = "nav",
+}: {
+  size?: "nav" | "hero";
+}) {
+  return (
+    <img
+      src="/logo.svg"
+      alt="VERO CAFFÉ logo"
+      className={
+        size === "hero"
+          ? "w-[clamp(160px,18vw,300px)] h-auto"
+          : "w-[clamp(100px,12vw,180px)] h-auto"
+      }
+      draggable={false}
+    />
+  );
+}
