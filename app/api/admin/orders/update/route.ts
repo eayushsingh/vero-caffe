@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function PATCH(req: Request) {
     try {
@@ -9,7 +9,8 @@ export async function PATCH(req: Request) {
             return new Response(JSON.stringify({ error: "Missing orderId or status" }), { status: 400 });
         }
 
-        const { error } = await supabaseServer
+        const supabase = await createClient();
+        const { error } = await supabase
             .from("orders")
             .update({ status })
             .eq("id", orderId);

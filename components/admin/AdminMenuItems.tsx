@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { supabaseClient as supabase } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/client";
 import { Loader2, Trash2, Edit, X, UploadCloud, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -16,6 +16,7 @@ interface MenuItem {
 }
 
 export default function AdminMenuItems({ onEdit }: { onEdit?: (item: any) => void }) {
+    const supabase = createClient();
     const [items, setItems] = useState<MenuItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingItem, setEditingItem] = useState<MenuItem | null>(null);

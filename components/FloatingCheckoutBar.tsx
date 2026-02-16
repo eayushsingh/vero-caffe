@@ -8,22 +8,24 @@ export default function FloatingCheckoutBar() {
     const totalQuantity = useCartStore(selectTotalQty)
     const subtotal = useCartStore(selectSubtotal)
     const setCartOpen = useCartStore((s) => s.setCartOpen)
+    const isCartOpen = useCartStore((s) => s.cartOpen)
     const [hydrated, setHydrated] = useState(false);
+
     useEffect(() => {
         setHydrated(true);
     }, []);
 
     if (!hydrated) return null;
 
-    // Hide when cart is empty
-    if (totalQuantity === 0) return null
+    // Hide when cart is empty OR when cart drawer is open
+    if (totalQuantity === 0 || isCartOpen) return null
 
     const handleOpenCart = () => {
         setCartOpen(true)
     }
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pb-safe animate-in slide-in-from-bottom duration-300">
+        <div className="fixed bottom-0 left-0 right-0 z-40 p-4 pb-safe animate-in slide-in-from-bottom duration-300 pointer-events-auto">
             <div
                 className="max-w-lg mx-auto bg-[#6A4B3A] text-white rounded-2xl shadow-2xl overflow-hidden"
                 style={{

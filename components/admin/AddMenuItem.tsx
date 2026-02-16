@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabaseClient as supabase } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/client";
 import { Loader2, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -32,6 +32,7 @@ export default function AddMenuItem({ onSuccess }: { onSuccess: () => void }) {
         setLoading(true);
 
         try {
+            const supabase = createClient();
             // 0. Security Check & Session for API
             const { data: { session } } = await supabase.auth.getSession();
             if (!session || session.user.email !== "admin@verocafe.com") {

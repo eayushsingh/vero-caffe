@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabaseClient } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/client";
 import { X, Upload, Loader2 } from "lucide-react";
 
 interface AddMenuFormProps {
@@ -38,15 +38,16 @@ export default function AddMenuForm({ onClose, onSuccess }: AddMenuFormProps) {
 
             // 1. Upload Image
             if (imageFile) {
+                const supabase = createClient();
                 const filename = `${Date.now()}-${imageFile.name}`;
-                const { data, error } = await supabaseClient.storage
+                const { data, error } = await supabase.storage
                     .from("menu-images")
                     .upload(filename, imageFile);
 
                 if (error) throw error;
 
                 // Get Public URL
-                const { data: { publicUrl } } = supabaseClient.storage
+                const { data: { publicUrl } } = supabase.storage
                     .from("menu-images")
                     .getPublicUrl(filename);
 

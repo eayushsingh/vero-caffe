@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabaseClient as supabase } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/client";
 import { Loader2, Package, Check, X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import { Order } from "@/types";
+
 export default function AdminOrders() {
-    const [orders, setOrders] = useState<any[]>([]);
+    const supabase = createClient();
+    const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchOrders = async () => {
@@ -107,8 +110,8 @@ export default function AdminOrders() {
                             // Extract customer details from items JSON metadata if available (fallback to dummy)
                             // Note: If schema has top-level fields (user_name etc), we should try to use them first.
                             // But my API creates them in 'items'. I will check both for robustness.
-                            const customerName = order.user_name || order.items?.customerDetails?.name || order.user_id.slice(0, 8);
-                            const customerEmail = order.user_email || order.items?.customerDetails?.email || "N/A";
+                            // Note: If schema has top-level fields (user_name etc), we should try to use them first.
+                            // But my API creates them in 'items'. I will check both for robustness.
 
                             return (
                                 <tr key={order.id} className="hover:bg-gray-50 transition-colors">
@@ -116,11 +119,11 @@ export default function AdminOrders() {
                                         #{order.id.slice(0, 8)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <div className="font-medium text-gray-900">{customerName}</div>
-                                        <div className="text-xs text-gray-400">{customerEmail}</div>
+                                        <div className="font-medium text-gray-900">{order.name || order.user_email || "Guest"}</div>
+                                        <div className="text-xs text-gray-400">{order.phone || "No Phone"}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
-                                        ₹{order.subtotal?.toLocaleString("en-IN") || order.total?.toLocaleString("en-IN")}
+                                        ₹{order.total?.toLocaleString("en-IN") || 0}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <select

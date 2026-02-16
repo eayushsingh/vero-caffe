@@ -1,49 +1,55 @@
-import { NextResponse } from "next/server";
-import { supabaseServer as supabaseAdmin } from "@/lib/supabase-server";
+
+import { NextResponse } from "next/server"
+import { createClient } from "@supabase/supabase-js"
+import { getSupabaseServerClient } from "@/lib/supabase/server"
+
+export const dynamic = "force-dynamic"
 
 export async function GET(req: Request) {
-    // Get token from header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const token = authHeader.split(' ')[1];
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-
-    if (authError || !user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const orderId = searchParams.get("orderId");
-
     try {
-        if (orderId) {
-            // Fetch Single Order
-            const { data, error } = await supabaseAdmin
-                .from("orders")
-                .select("*")
-                .eq("id", orderId)
-                // STRICT SECURITY: Ensure the order belongs to this user (by email)
-                .eq("user_email", user.email)
-                .single();
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
 
-            if (error || !data) {
-                return NextResponse.json({ error: "Order not found" }, { status: 404 });
-            }
-            return NextResponse.json({ order: data });
+        const authClient = await getSupabaseServerClient()
+        const { data: { user } } = await authClient.auth.getUser()
+
+        const { searchParams } = new URL(req.url)
+        const guestId = searchParams.get("guest_id")
+        const phone = searchParams.get("phone")
+
+        let query = supabase
+            .from("orders")
+            .select("*, order_items(*)")
+            .order("created_at", { ascending: false })
+
+        if (user) {
+            // If logged in, fetch by user_id
+            query = query.eq("user_id", user.id)
         } else {
-            // Fetch All User Orders
-            const { data, error } = await supabaseAdmin
-                .from("orders")
-                .select("*")
-                .eq("user_email", user.email)
-                .order("created_at", { ascending: false });
+            // If guest, fetch by guest_id OR phone
+            // Supabase .or() syntax: "guest_id.eq.value,phone.eq.value"
+            // But we need to be careful. If both provided, match either?
+            // Usually user provides one context.
 
-            if (error) throw error;
-            return NextResponse.json({ orders: data });
+            if (guestId) {
+                query = query.eq("guest_id", guestId)
+            } else if (phone) {
+                query = query.eq("phone", phone)
+            } else {
+                // No identity = no orders
+                return NextResponse.json({ orders: [] })
+            }
         }
+
+        const { data: orders, error } = await query
+
+        if (error) throw error
+
+        return NextResponse.json({ orders: orders || [] })
+
     } catch (error: any) {
-        console.error("Fetch orders error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error.message }, { status: 500 })
     }
 }

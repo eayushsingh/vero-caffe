@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabaseClient as supabase } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Loader2, ArrowLeft, ShieldCheck, AlertCircle } from "lucide-react";
 import Link from "next/link";
@@ -31,6 +31,7 @@ function PaymentContent() {
         }
 
         const fetchOrder = async () => {
+            const supabase = createClient();
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 router.push("/auth");

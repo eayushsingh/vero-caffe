@@ -9,6 +9,7 @@ export interface CartItem {
     price: number;
     quantity: number;
     image: string;
+    category?: string;
 }
 
 interface CartStore {
@@ -47,7 +48,19 @@ export const useCartStore = create<CartStore>()(
                         ),
                     });
                 } else {
-                    set({ items: [...items, item] });
+                    set({
+                        items: [
+                            ...items,
+                            {
+                                id: item.id,
+                                name: item.name,
+                                price: item.price,
+                                image: item.image,
+                                category: item.category,
+                                quantity: item.quantity || 1
+                            }
+                        ]
+                    });
                 }
             },
 
@@ -75,7 +88,7 @@ export const useCartStore = create<CartStore>()(
         {
             name: "cart-storage",
             storage: createJSONStorage(() => localStorage),
-
+            partialize: (state) => ({ items: state.items }),
             onRehydrateStorage: () => (state) => {
                 state?.setHydrated(true);
             },

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
-import { createClient } from "@/lib/supabase-server"
+import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import AdminHeaderLogout from "@/components/admin/AdminHeaderLogout"
 
 export default async function AdminLayout({
   children,
@@ -54,9 +55,7 @@ export default async function AdminLayout({
         <header className="bg-white border-b px-6 py-4 flex justify-between items-center">
           <h1 className="text-lg font-medium">Admin Dashboard</h1>
           <div>
-            <form action="/auth/logout" method="post">
-              <button type="submit" className="px-4 py-2 bg-black text-white rounded">Logout</button>
-            </form>
+            <AdminHeaderLogout />
           </div>
         </header>
 

@@ -2,6 +2,7 @@
 import Logo from "./Logo";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,14 @@ export default function Navbar() {
               aria-label="VERO CAFFE Home"
             >
               <span className="sr-only">VERO CAFFÉ</span>
-              <Logo size="nav" />
+              <Image
+                src="/logo.svg"
+                alt="Vero Caffe"
+                width={120}
+                height={40}
+                priority
+                className="opacity-100 brightness-100 object-contain"
+              />
             </Link>
           </div>
 

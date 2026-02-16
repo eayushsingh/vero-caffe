@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { supabaseServer as supabaseAdmin } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
     try {
@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
         }
 
         // 2. Update Order in Database
-        const { error: updateError } = await supabaseAdmin
+        const supabase = await createClient();
+        const { error: updateError } = await supabase
             .from("orders")
             .update({
                 status: "COMPLETED",

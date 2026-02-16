@@ -1,12 +1,13 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, ShoppingBag, CreditCard, Banknote, Loader2 } from "lucide-react"
 import { useCartStore, selectSubtotal } from "@/store/useCartStore"
 import { useAuth } from "@/components/hooks/useAuth"
+import { getItemImage } from "@/lib/categoryImages"
 import Navbar from "@/components/navbar"
 
 export default function CheckoutPage() {
@@ -17,73 +18,62 @@ export default function CheckoutPage() {
     const clearCart = useCartStore((s) => s.clearCart)
 
     const [loading, setLoading] = useState(false)
-    const [paymentMethod, setPaymentMethod] = useState<"online" | "counter" | null>(null)
-    const [showOnlineModal, setShowOnlineModal] = useState(false)
-
-    // Form State
     const [name, setName] = useState("")
     const [phone, setPhone] = useState("")
     const [note, setNote] = useState("")
+    const [showOnlineModal, setShowOnlineModal] = useState(false)
 
+    // Ensure hydration
     const [hydrated, setHydrated] = useState(false)
+    useEffect(() => { setHydrated(true) }, [])
+
+    // Generate a guest ID if needed (persisted in local storage ideally, but generating simple one here)
+    // Actually, backend will fallback to phone if not provided.
+    // Let's generate a simple session ID for guest if we want strict guest tracking.
+    const [guestId, setGuestId] = useState("")
     useEffect(() => {
-        setHydrated(true)
+        let stored = localStorage.getItem("guest_id")
+        if (!stored) {
+            stored = Math.random().toString(36).substring(7)
+            localStorage.setItem("guest_id", stored)
+        }
+        setGuestId(stored)
     }, [])
 
-    const handlePlaceOrder = async (method: "online" | "counter") => {
-        if (!name.trim()) {
-            alert("Please enter your name")
-            return
-        }
-        if (!phone.trim() || phone.length < 10) {
-            alert("Please enter a valid phone number")
+    const handleCheckout = async () => {
+        if (!name.trim() || !phone.trim()) {
+            alert("Name and Phone are required")
             return
         }
 
-        // Phase 2: Redirect "online" clicks to a modal, or just process as counter?
-        // User said "Enable Pay at Counter ONLY". I'll make online button show the modal, 
-        // and the modal will proceed to counter.
-        if (method === "online") {
-            setShowOnlineModal(true)
-            return
-        }
-
-        const effectiveMethod = "counter"
-
-        setPaymentMethod(effectiveMethod)
         setLoading(true)
 
         try {
-            const orderRes = await fetch("/api/orders/create", {
+            const res = await fetch("/api/orders/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    items: items.map(item => ({
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                        image: item.image,
-                    })),
-                    payment_method: effectiveMethod.toUpperCase(),
-                    user_email: user?.email || null,
-                    user_name: name,
-                    phone: phone,
-                    notes: note || null,
-                }),
-            });
+                    name,
+                    phone,
+                    email: user?.email || null,
+                    items,
+                    total: subtotal,
+                    payment_method: "cod",
+                    notes: note,
+                    guest_id: user ? null : guestId // Send guest ID
+                })
+            })
 
-            const orderData = await orderRes.json();
-            if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
+            const data = await res.json()
+
+            if (!res.ok) throw new Error(data.error || "Failed")
 
             clearCart()
-            router.push(`/success?method=${effectiveMethod}&order_id=${orderData.order_id}`)
+            window.location.href = `/success?orderId=${data.orderId}`
 
         } catch (err: any) {
-            console.error("Order error:", err)
-            alert(err.message || "Failed to place order. Please try again.")
+            alert(err.message)
             setLoading(false)
-            setPaymentMethod(null)
         }
     }
 
@@ -93,18 +83,9 @@ export default function CheckoutPage() {
         return (
             <div className="min-h-screen bg-[#FAFAF8]">
                 <Navbar />
-                <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
-                    <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mb-6">
-                        <ShoppingBag className="w-8 h-8 text-neutral-400" />
-                    </div>
-                    <h1 className="font-serif text-2xl text-[#1A1A1A] mb-2">Your cart is empty</h1>
-                    <p className="text-neutral-500 mb-8 max-w-md">
-                        Looks like you haven&apos;t added anything to your cart yet.
-                    </p>
-                    <Link
-                        href="/menu"
-                        className="rounded-full px-8 py-4 bg-[#6A4B3A] text-white hover:bg-[#5A3F31] text-sm tracking-wide uppercase transition-all duration-300 shadow-lg hover:shadow-xl"
-                    >
+                <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                    <h1 className="text-2xl font-serif">Your cart is empty</h1>
+                    <Link href="/menu" className="mt-4 px-6 py-3 bg-[#6A4B3A] text-white rounded-full">
                         Browse Menu
                     </Link>
                 </div>
@@ -112,202 +93,72 @@ export default function CheckoutPage() {
         )
     }
 
-    const fallbackImage = "/coffee.jpg"
-
     return (
         <div className="min-h-screen bg-[#FAFAF8]">
             <Navbar />
+            <div className="max-w-6xl mx-auto py-12 px-6">
+                <h1 className="text-3xl font-serif mb-8">Checkout</h1>
 
-            <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                {/* Header */}
-                <div className="flex items-center gap-4 mb-10">
-                    <Link
-                        href="/menu"
-                        className="p-2 rounded-full hover:bg-black/5 transition-colors text-[#1A1A1A]"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                    </Link>
-                    <h1 className="font-serif text-3xl text-[#1A1A1A] tracking-wide">Checkout</h1>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                    {/* Left Column: Form */}
-                    <div className="lg:col-span-7 space-y-8">
-
-                        {/* Contact Details */}
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-neutral-200">
-                            <h2 className="font-serif text-xl text-[#1A1A1A] mb-6 flex items-center gap-3">
-                                <span className="w-7 h-7 rounded-full bg-[#6A4B3A] text-white flex items-center justify-center text-xs font-bold">1</span>
-                                Contact Details
-                            </h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label htmlFor="name" className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">
-                                        Name *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="name"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl bg-neutral-50 border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#6A4B3A]/20 focus:border-[#6A4B3A] transition-all"
-                                        placeholder="Your Name"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="phone" className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">
-                                        Phone *
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        id="phone"
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl bg-neutral-50 border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#6A4B3A]/20 focus:border-[#6A4B3A] transition-all"
-                                        placeholder="Mobile Number"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="note" className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">
-                                        Special Instructions (Optional)
-                                    </label>
-                                    <textarea
-                                        id="note"
-                                        value={note}
-                                        onChange={(e) => setNote(e.target.value)}
-                                        rows={3}
-                                        className="w-full px-4 py-3 rounded-xl bg-neutral-50 border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#6A4B3A]/20 focus:border-[#6A4B3A] transition-all resize-none"
-                                        placeholder="Any special requests or allergies..."
-                                    />
-                                </div>
-                            </div>
+                <div className="grid lg:grid-cols-2 gap-12">
+                    <div className="space-y-6">
+                        <div className="bg-white p-6 rounded-xl border shadow-sm">
+                            <h2 className="text-xl font-semibold mb-4">Contact</h2>
+                            <input
+                                placeholder="Name *"
+                                className="w-full p-3 border rounded-lg mb-3"
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                            />
+                            <input
+                                placeholder="Phone *"
+                                className="w-full p-3 border rounded-lg mb-3"
+                                value={phone}
+                                onChange={e => setPhone(e.target.value)}
+                            />
+                            <textarea
+                                placeholder="Notes (Optional)"
+                                className="w-full p-3 border rounded-lg"
+                                rows={3}
+                                value={note}
+                                onChange={e => setNote(e.target.value)}
+                            />
                         </div>
 
-                        {/* Payment Method */}
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-neutral-200">
-                            <h2 className="font-serif text-xl text-[#1A1A1A] mb-6 flex items-center gap-3">
-                                <span className="w-7 h-7 rounded-full bg-[#6A4B3A] text-white flex items-center justify-center text-xs font-bold">2</span>
-                                Payment Method
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {/* Pay Online Button */}
-                                <button
-                                    onClick={() => handlePlaceOrder("online")}
-                                    disabled={loading}
-                                    className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-[#6A4B3A] bg-[#6A4B3A] text-white hover:bg-[#5A3F31] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {loading && paymentMethod === "online" ? (
-                                        <Loader2 className="w-8 h-8 animate-spin" />
-                                    ) : (
-                                        <CreditCard className="w-8 h-8" />
-                                    )}
-                                    <span className="font-semibold">Pay Online</span>
-                                    <span className="text-xs text-white/70">UPI, Card, Net Banking</span>
+                        <div className="bg-white p-6 rounded-xl border shadow-sm">
+                            <h2 className="text-xl font-semibold mb-4">Payment</h2>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button onClick={() => setShowOnlineModal(true)} className="p-4 border-2 border-[#6A4B3A] bg-[#6A4B3A] text-white rounded-xl">
+                                    Pay Online
                                 </button>
-
-                                {/* Pay at Counter Button */}
-                                <button
-                                    onClick={() => handlePlaceOrder("counter")}
-                                    disabled={loading}
-                                    className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-[#6A4B3A] bg-white text-[#6A4B3A] hover:bg-[#6A4B3A]/5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {loading && paymentMethod === "counter" ? (
-                                        <Loader2 className="w-8 h-8 animate-spin" />
-                                    ) : (
-                                        <Banknote className="w-8 h-8" />
-                                    )}
-                                    <span className="font-semibold">Pay at Counter</span>
-                                    <span className="text-xs text-neutral-500">Cash or Card at Pickup</span>
+                                <button onClick={handleCheckout} disabled={loading} className="p-4 border-2 border-[#6A4B3A] text-[#6A4B3A] rounded-xl font-bold hover:bg-[#6A4B3A] hover:text-white transition">
+                                    {loading ? <Loader2 className="animate-spin mx-auto" /> : "Pay at Counter"}
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Order Summary */}
-                    <div className="lg:col-span-5">
-                        <div className="bg-white p-8 rounded-2xl shadow-lg border border-neutral-200 sticky top-8">
-                            <h2 className="font-serif text-xl text-[#1A1A1A] mb-6">Order Summary</h2>
-
-                            <ul className="space-y-4 mb-8 max-h-[400px] overflow-y-auto pr-2">
-                                {items.map((item) => (
-                                    <li key={item.id} className="flex gap-4">
-                                        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100 border border-neutral-100">
-                                            <Image
-                                                src={item.image || fallbackImage}
-                                                alt={item.name}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <p className="font-medium text-[#1A1A1A] truncate">{item.name}</p>
-                                                <p className="font-medium text-[#1A1A1A] tabular-nums">
-                                                    ₹{(item.price * item.quantity).toLocaleString("en-IN")}
-                                                </p>
-                                            </div>
-                                            <p className="text-sm text-neutral-500">
-                                                Qty: {item.quantity} × ₹{item.price}
-                                            </p>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <div className="border-t border-dashed border-neutral-200 pt-6 space-y-3">
-                                <div className="flex justify-between text-neutral-600">
-                                    <span>Subtotal</span>
-                                    <span className="tabular-nums">₹{subtotal.toLocaleString("en-IN")}</span>
-                                </div>
-                                <div className="flex justify-between text-[#1A1A1A] font-semibold text-lg pt-4 border-t border-neutral-100">
-                                    <span>Total</span>
-                                    <span className="tabular-nums">₹{subtotal.toLocaleString("en-IN")}</span>
-                                </div>
+                    <div className="bg-white p-6 rounded-xl border shadow-sm h-fit">
+                        <h2 className="text-xl font-semibold mb-4">Summary</h2>
+                        {items.map(item => (
+                            <div key={item.id} className="flex justify-between py-2 border-b">
+                                <span>{item.quantity}x {item.name}</span>
+                                <span>₹{item.price * item.quantity}</span>
                             </div>
+                        ))}
+                        <div className="flex justify-between mt-4 text-xl font-bold">
+                            <span>Total</span>
+                            <span>₹{subtotal}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Online Payment Coming Soon Modal */}
             {showOnlineModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity duration-300">
-                    <div
-                        className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-neutral-100 animate-in fade-in zoom-in duration-300"
-                    >
-                        <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-6 mx-auto">
-                            <CreditCard className="w-8 h-8 text-amber-600" />
-                        </div>
-
-                        <h2 className="font-serif text-2xl text-[#1A1A1A] text-center mb-3">
-                            Payment Coming Soon
-                        </h2>
-
-                        <p className="text-neutral-500 text-center mb-8 px-2">
-                            Online payment will be available soon. Please pay at the counter for now.
-                        </p>
-
-                        <div className="space-y-3">
-                            <Link href="/menu" className="block w-full">
-                                <button
-                                    className="w-full py-4 rounded-xl bg-[#6A4B3A] text-white hover:bg-[#5A3F31] font-medium tracking-wide transition-all shadow-lg hover:shadow-xl"
-                                >
-                                    Go Back to Menu
-                                </button>
-                            </Link>
-
-                            <button
-                                onClick={() => {
-                                    setShowOnlineModal(false)
-                                    handlePlaceOrder("counter")
-                                }}
-                                className="w-full py-4 rounded-xl border-2 border-[#6A4B3A] text-[#6A4B3A] bg-white hover:bg-[#6A4B3A]/5 font-medium tracking-wide transition-all"
-                            >
-                                Pay at Counter
-                            </button>
-                        </div>
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+                    <div className="bg-white p-8 rounded-xl max-w-sm text-center">
+                        <h3 className="text-xl font-bold mb-2">Coming Soon</h3>
+                        <p className="text-gray-500 mb-6">Online payments are currently disabled. Please pay at the counter.</p>
+                        <button onClick={() => setShowOnlineModal(false)} className="w-full py-3 bg-gray-200 rounded-lg">Close</button>
                     </div>
                 </div>
             )}

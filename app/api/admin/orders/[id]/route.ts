@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -21,7 +21,8 @@ export async function PATCH(
             return NextResponse.json({ error: "Missing ID or status" }, { status: 400 });
         }
 
-        const { error } = await supabaseServer
+        const supabase = await createClient();
+        const { error } = await supabase
             .from("orders")
             .update({ status })
             .eq("id", id);

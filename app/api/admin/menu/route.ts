@@ -1,8 +1,9 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(req: Request) {
     try {
-        const { data, error } = await supabaseServer
+        const supabase = await createClient();
+        const { data, error } = await supabase
             .from("menu_items")
             .select("*")
             .order("created_at", { ascending: false });
@@ -23,7 +24,8 @@ export async function POST(req: Request) {
             return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
         }
 
-        const { data, error } = await supabaseServer
+        const supabase = await createClient();
+        const { data, error } = await supabase
             .from("menu_items")
             .insert([body])
             .select()
@@ -43,7 +45,8 @@ export async function PATCH(req: Request) {
 
         if (!id) return new Response(JSON.stringify({ error: "Missing ID" }), { status: 400 });
 
-        const { data, error } = await supabaseServer
+        const supabase = await createClient();
+        const { data, error } = await supabase
             .from("menu_items")
             .update(updates)
             .eq("id", id)
@@ -64,7 +67,8 @@ export async function DELETE(req: Request) {
 
         if (!id) return new Response(JSON.stringify({ error: "Missing ID" }), { status: 400 });
 
-        const { error } = await supabaseServer
+        const supabase = await createClient();
+        const { error } = await supabase
             .from("menu_items")
             .delete()
             .eq("id", id);

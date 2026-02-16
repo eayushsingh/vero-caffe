@@ -125,3 +125,15 @@
 .animate-floatSlow {
   animation: floatSlow 6s ease-in-out infinite;
 }
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease;
+}

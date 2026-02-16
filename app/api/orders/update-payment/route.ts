@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseServer as supabaseAdmin } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function PATCH(req: Request) {
     try {
@@ -15,14 +15,15 @@ export async function PATCH(req: Request) {
         if (!authHeader) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const token = authHeader.split(' ')[1];
-        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
         if (authError || !user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         // Verify Order Ownership via Email
-        const { data: existingOrder, error: fetchError } = await supabaseAdmin
+        const { data: existingOrder, error: fetchError } = await supabase
             .from("orders")
             .select("user_email")
             .eq("id", orderId)
@@ -37,7 +38,7 @@ export async function PATCH(req: Request) {
         }
 
         // Update Order
-        const { error: updateError } = await supabaseAdmin
+        const { error: updateError } = await supabase
             .from("orders")
             .update({
                 status: status,

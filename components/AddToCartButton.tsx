@@ -11,6 +11,7 @@ interface Props {
     price: number | string
     image?: string | null
     image_url?: string | null
+    category?: string
   }
   categoryImage?: string
 }
@@ -42,6 +43,7 @@ export default function AddToCartButton({ item, categoryImage }: Props) {
       name: String(item.name),
       price: Number(item.price),
       image: itemImage,
+      category: item.category, // Pass category
       quantity: 1,
     })
   }

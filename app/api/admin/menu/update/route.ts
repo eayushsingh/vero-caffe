@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { supabaseServer } from "@/lib/supabase-server"
+import { createClient } from "@/lib/supabase/server"
 
 export async function POST(req: Request) {
 	try {
@@ -15,7 +15,8 @@ export async function POST(req: Request) {
 			)
 		}
 
-		const { error } = await supabaseServer
+		const supabase = await createClient();
+		const { error } = await supabase
 			.from("menu_items")
 			.update({ price })
 			.eq("id", id)

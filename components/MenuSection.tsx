@@ -1,10 +1,12 @@
 import Image from "next/image"
-import { supabaseServer } from "@/lib/supabase-server"
+import { createClient } from "@/lib/supabase/server"
 import AddToCartButton from "./AddToCartButton"
+import { getItemImage } from "@/lib/categoryImages"
 
 export default async function MenuSection() {
+	const supabase = await createClient();
 	// Fetch live menu items from Supabase (server-side)
-	const { data: menuItems, error } = await supabaseServer
+	const { data: menuItems, error } = await supabase
 		.from("menu_items")
 		.select("*")
 		.order("category")

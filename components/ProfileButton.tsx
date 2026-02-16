@@ -1,15 +1,23 @@
 "use client";
 
-import { supabaseClient as supabase } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function ProfileButton() {
+    const supabase = createClient();
     const router = useRouter();
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        router.refresh();
-        router.push("/");
+        try {
+            await supabase.auth.signOut();
+            await fetch("/api/auth/logout", {
+                method: "POST"
+            });
+            window.location.href = "/";
+        } catch (error) {
+            console.error("Logout error:", error);
+            window.location.href = "/";
+        }
     };
 
     return (

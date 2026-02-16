@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { razorpay } from "@/lib/razorpay";
-import { supabaseServer as supabaseAdmin } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
     try {
@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
         }
 
         // 1. Fetch order from DB to get actual amount
-        const { data: order, error: fetchError } = await supabaseAdmin
+        const supabase = await createClient();
+        const { data: order, error: fetchError } = await supabase
             .from("orders")
             .select("total, status")
             .eq("id", orderId)
@@ -23,6 +24,10 @@ export async function POST(req: NextRequest) {
 
         if (order.status === "COMPLETED") {
             return NextResponse.json({ error: "Order already paid" }, { status: 400 });
+        }
+
+        if (!razorpay) {
+            return NextResponse.json({ error: "Payment gateway error" }, { status: 500 });
         }
 
         // 2. Create Razorpay Order
