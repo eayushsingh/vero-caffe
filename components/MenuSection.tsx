@@ -30,9 +30,9 @@ export default async function MenuSection() {
 	const food = items.filter((i: any) => i.category === "Signature Bites")
 
 	const groups = [
-		{ title: "Coffee", items: coffee, image: "/coffee.jpg", subtitle: "Single Origin · Precision Brewed" },
-		{ title: "Speciality Drinks", items: drinks, image: "/speciality.jpg", subtitle: "Signature Cold & Creative" },
-		{ title: "Signature Bites", items: food, image: "/bites.jpg", subtitle: "Seasonal Plates" },
+		{ title: "Coffee", items: coffee, image: "/images/categories/vero_caffe_high_quality_1.jpg", subtitle: "Single Origin · Precision Brewed" },
+		{ title: "Speciality Drinks", items: drinks, image: "/images/categories/vero_caffe_high_quality_2.jpg", subtitle: "Signature Cold & Creative" },
+		{ title: "Signature Bites", items: food, image: "/images/categories/vero_caffe_high_quality_3.jpg", subtitle: "Seasonal Plates" },
 	]
 
 	return (
@@ -56,7 +56,7 @@ export default async function MenuSection() {
 										alt={cat.title}
 										fill
 										sizes="(max-width:768px) 100vw, 33vw"
-										className="object-cover transition-transform duration-700 hover:scale-105"
+										className={`object-cover transition-transform duration-700 hover:scale-105 float-premium-${i + 1}`}
 									/>
 									<div className="absolute inset-0 bg-black/10" />
 								</div>

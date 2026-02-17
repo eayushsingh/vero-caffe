@@ -137,3 +137,29 @@
 .animate-slideIn {
   animation: slideIn 0.3s ease;
 }
+
+@keyframes floatPremium {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.float-premium-1 {
+  animation: floatPremium 8s ease-in-out infinite;
+}
+
+.float-premium-2 {
+  animation: floatPremium 8s ease-in-out infinite;
+  animation-delay: 2.5s;
+}
+
+.float-premium-3 {
+  animation: floatPremium 8s ease-in-out infinite;
+  animation-delay: 5s;
+}

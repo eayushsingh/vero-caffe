@@ -50,9 +50,10 @@ export default function HeroCinematic() {
         <div className="flex items-center justify-center">
           {/* Center content */}
           <div
-            className="w-full max-w-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] rounded-2xl flex flex-col items-center text-center px-5 sm:px-8 md:px-12 py-10 sm:py-12 md:py-14 lg:py-16"
+            className="w-full max-w-2xl bg-white/70 backdrop-blur-xl border border-black/[0.06] rounded-2xl flex flex-col items-center text-center px-5 sm:px-8 md:px-12 py-10 sm:py-12 md:py-14 lg:py-16 relative"
             style={{ boxShadow: "0 10px 28px rgba(0,0,0,0.045)" }}
           >
+
             <motion.p
               variants={fadeUp}
               className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-[#6B6B6B] font-medium mb-4 sm:mb-6"
@@ -112,6 +113,37 @@ export default function HeroCinematic() {
                 Our Story
               </a>
             </motion.div>
+
+            {/* Floating images container */}
+            <div className="pointer-events-none absolute inset-0 hidden lg:block z-0">
+
+              {/* LEFT IMAGE */}
+              <div className="absolute left-[-160px] top-1/2 -translate-y-1/2">
+                <img
+                  src="/images/categories/vero_caffe_high_quality_1.jpg"
+                  alt=""
+                  className="w-[150px] h-[200px] object-cover rounded-2xl shadow-xl animate-floatSlow"
+                />
+              </div>
+
+              {/* RIGHT STACK CONTAINER */}
+              <div className="absolute right-[-160px] top-1/2 -translate-y-1/2 flex flex-col gap-6">
+
+                <img
+                  src="/images/categories/vero_caffe_high_quality_2.jpg"
+                  alt=""
+                  className="w-[150px] h-[200px] object-cover rounded-2xl shadow-xl animate-floatSlow"
+                />
+
+                <img
+                  src="/images/categories/vero_caffe_high_quality_3.jpg"
+                  alt=""
+                  className="w-[150px] h-[200px] object-cover rounded-2xl shadow-xl animate-floatSlow"
+                />
+
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
